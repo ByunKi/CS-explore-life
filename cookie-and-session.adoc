@@ -1,0 +1,99 @@
+= 학습 이유
+
+. JSP로 `최근에 본 상품` 기능을 구현하기 위해 cookie에 대한 심도있는 공부가 필요
+. HTTP 통신의 비연결성을 유지하며, 특정 사용자를 식별할 수 있는 방법을 공부
+
+= 학습 목차
+
+. HTTP 통신
+. 사용자 식별의 필요성
+. cookie 및 session의 Lifecycle, 사용처
+. Java에서의 사용방법
+
+= 본문
+
+== HTTP 통신
+
+* 텍스트 기반의 통신 규약으로 인터넷에서 데이터(문서)를 주고 받을 수있는 프로토콜을 의미한다.
+* `클라이언트-서버` 구조로 구성되며 TCP/IP위에서 동작한다.
+** `클라이언트-서버` 구조
+. 클라이언트가 HTTP 메시지를 통해서 서버에게 요청을 보낸다.
+. 서버는 요청을 처리하여 HTTP 메시지의 형태로 클라이언트에게 전송한다. (응답)
+. 클라이언트는 요청의 결과를 받아 동작한다.
+
+** `클라이언트-서버` 구조 양끝에 클라이언트와 서버가 존재하며, 사이에 필터, 게이트 웨이, 캐시 등의 객체가 존재할 수 있다.
+
+* 비연결성 (Connectionless)
+** 클라이언트와 서버가 통신 후, 서버에서 응답을 마치면 HTTP 통신이 종료되는 특성
+** __서버에서 응답 후, 통신이 종료되지 않는다면 ?__
+
+  클라이언트의 요청이 서버에 잔류하여 지속적으로 서버의 자원을 소모한다.
+  서버에 접근하는 클라이언트의 수와 서버의 자원 소모가 비례하여 서버의 가용 리소스가 감소한다.
+  결과적으로 서버에 접근할 수 있는 클라이언트의 수가 제한되고 추가적인 H/W를 요구하므로 비효율적이다.
+  이러한 이유로 서버에서는 응답 후, 클라이언트와의 연결을 종료하여 서버의 자원을 최소화한다.
+
+* 무상태 (Stateless)
+** 서버가 클라이언트의 상태를 고려하지 않고 응답만을 처리하는 것을 의미한다.
+** 특정 서버에서 장애가 발생해도 클라이언트는 다른 서버에서 응답을 받을 수 있어 분산 서버를 구성하는데 유리하다.
+
+* 상태코드 (State Code)
+** 3자리 숫자로 구성되어 있으며, 1 ~ 5까지의 첫 번째 자리를 제공한다.
+. 1xx (정보): 요청을 받았고, 프로세스를 계속 진행한다는 의미
+. 2xx (성공): 요청을 성공적으로 수행하였다는 의미
+. 3xx (리디렉션): 요청을 완료하기 위해서 추가적인 작업을 수행한다는 의미
+. 4xx (클라이언트 오류): 요청의 형식이 잘못되었거나 요청을 처리할 수 없을 때를 표현하는 코드
+. 5xx (서버 오류): 서버가 유효한 요청에 대하여 응답을 할 수 없다는 것을 표현하는 코드
+
+== 사용자 식별의 필요성
+
+* HTTP 통신이 Connectionless, Stateless 하여 서버는 매 요청마다 클라이언트를 식별하는 Overhead가 존재한다.
+* Overhead를 감소시키기 위해, 클라이언트를 식별할 수 있는 데이터를 제공하고 클라이언트 요청 시, 데이터가 존재하면 특정한 클라이언트로 인식하는 방법을 사용한다.
+
+== cookie 및 session의 Lifecycle, 사용처
+
+* 
+
+== Java에서의 사용방법
+
+[source, java]
+----
+public static <T> boolean hasNamedItem(T[] items, String name) {
+  for(T item : items) {
+    if (item.equals(name)) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+public static String getNamedCookieValue(Cookie[] cookies, String name) {
+  for(Cookie cookie : cookies) {
+    if (cookie.getName().equals(name)) {
+      return cookie.getValue();
+    }
+  }
+
+  return null;
+}
+----
+
+[source, java]
+----
+HttpServletRequest request = ...;
+HttpServletResponse response = ...;
+
+Cookie cookie = null;
+Cookie[] cookies = request.getCookies();
+if (hasNamedItem(cookies, "{name}")) {
+  cookie = new Cookie("{name}", getNamedCookieValue(cookies, "{name}"));
+
+} else {
+  cookie = new Cookie ("{name}", "{value}");
+
+}
+
+response.addCookie(cookie);
+----
+
+= 사례에 적용
