@@ -1,0 +1,21 @@
+= 학습 내용
+
+[%header, cols="3, 5a"]
+|===
+^.>| 학습 일
+^.>| 내용
+
+^.^| 2023.10.15
+|   
+    * https://github.com/ByunKi/CS-explore-life/blob/main/Java-IO-Stream.adoc[Java I/O Stream]
+
+^.^| 2023.11.27
+| 
+    * link:https://github.com/ByunKi/nhn-academy-course-2/blob/main/quiz/Chapter_3.adoc[ThreadLocal<T>]
+    * link:https://github.com/ByunKi/nhn-academy-course-2/blob/main/quiz/Chapter_3.adoc[DB Connection Pool]
+    
+^.^| 2023.12.29
+| 
+    * link:https://github.com/ByunKi/nhn-academy-course-2/blob/main/quiz/Chapter_4.adoc[JSP 쿠키 및 세션]
+
+|===
