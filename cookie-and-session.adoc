@@ -51,7 +51,11 @@
 
 == cookie 및 session의 Lifecycle, 사용처
 
-* 
+* Cookie
+** 클라이언트에 저장되는 Key-Value 데이터 파일을 의미한다.
+** 클라이언트의 상태 정보를 Local에 저장했다가 참조한다.
+** 유지 기한이 명시된 Cookie는 명시 시간동안 저장되지만, 유지 기간이 명시되지 않은 Cookie는 클라이언트(브라우저)가 종료되면 소멸한다.
+** 사용자가 요청하지 않아도, 브라우저가 자동으로 넣어서 Server에 전송한다.
 
 == Java에서의 사용방법
 
@@ -97,3 +101,54 @@ response.addCookie(cookie);
 ----
 
 = 사례에 적용
+
+[source, java]
+----
+List<String> itemStringList = CookieUtils.getItemStringList(req.getCookies(), "recentItems", "/");
+if (Objects.nonNull(itemStringList)) {
+    List<Product> recentItemList = new ArrayList<>();
+    for (String item : itemStringList) {
+        Product product = productService.getProduct(Integer.parseInt(item));
+        if (Objects.nonNull(product)) {
+            recentItemList.add(product);
+        }
+    }
+
+    req.setAttribute("recentItemList", recentItemList);
+}
+----
+
+[source, java]
+----
+@Override
+public String execute(HttpServletRequest req, HttpServletResponse resp) {
+    String rawProductId = req.getParameter("productId");
+    if (Objects.nonNull(rawProductId)) {
+        Product product = productService.getProduct(Integer.parseInt(rawProductId));
+        req.setAttribute("product", product);
+
+        Cookie[] cookies = req.getCookies();
+        String name = "recentItems";
+        if (hasNamedCookie(cookies, name)) {
+            Queue<String> recentItemsQueue = new LinkedList<>(getItemStringList(cookies, name, "/"));
+
+            if (!recentItemsQueue.contains(rawProductId)) {
+                if (recentItemsQueue.size() >= MAX_QUEUE_SIZE) {
+                    recentItemsQueue.poll();
+                }
+
+                recentItemsQueue.offer(rawProductId);
+                resp.addCookie(new Cookie(name, getItemString(recentItemsQueue, "/")));
+            }
+
+        } else {
+            resp.addCookie(new Cookie(name, rawProductId));
+
+        }
+
+        return "shop/product/productDetail";
+    }
+
+    return "redirect:index.do";
+}
+----
