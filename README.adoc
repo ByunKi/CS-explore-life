@@ -20,6 +20,7 @@
 
 ^.^| 2023.12.30
 | 
-    * link:[Java Annotation 및 의존성 주입]
+    * link:[Java Annotation]
+    * link:[Dependency Injection]
 
 |===
