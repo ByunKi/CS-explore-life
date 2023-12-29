@@ -7,7 +7,7 @@
 
 ^.^| 2023.10.15
 |   
-    * https://github.com/ByunKi/CS-explore-life/blob/main/Java-IO-Stream.adoc[Java I/O Stream]
+    * link:https://github.com/ByunKi/CS-explore-life/blob/main/Java-IO-Stream/content.adoc[Java I/O Stream]
 
 ^.^| 2023.11.27
 | 
