@@ -1,11 +1,13 @@
 = 학습 이유
-  . MVC 구조로 서비스를 구현, 프로그래머의 개입없이 동작을 구현하기 위해 학습의 필요성을 느낌
-  . Spring에서 사용되는 IOC를 경험하기 위해서 학습을 실시
+
+. MVC 구조로 서비스를 구현, 프로그래머의 개입없이 동작을 구현하기 위해 학습의 필요성을 느낌
+. Spring에서 사용되는 IOC를 경험하기 위해서 학습을 실시
   
 = 학습 목차
-  . 의존성 주입 (Dependency Injection)
-  . Tomcat에서 Annotation을 활용한 의존성 주입
-  . 제어역전 (Invertion Of Control)
+
+. 의존성 주입 (Dependency Injection)
+. Tomcat에서 Annotation을 활용한 의존성 주입
+. 제어역전 (Invertion Of Control)
     
 = 본문
     
