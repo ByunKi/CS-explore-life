@@ -1,0 +1,47 @@
+= 목차
+
+* Connection Pool
+* 구조
+* 종류
+
+= 본문
+
+== Connection Pool
+
+* DB에 연결할 때마다 Connection 객체를 새로 만드는 것은 비용이 많이 들며, 굉장히 비효율적이다.
+* DB의 연결이 필요할 때 마다, 사전에 준비된 Connection 객체를 사용하여 어플리케이션의 성능을 개선한다.
+
+  웹 컨테이너(WAS)가 실행되면서 일정량의 Connection 객체를 미리 만들어서 pool에 저장했다가, 
+  클라이언트 요청이 오면 Connection 객체를 빌려주고 해당 객체의 임무가 완료되면 Connection 객체를 반납 받아서 pool에 저장하는 프로그래밍 기법이다.
+
+* 동시에 접근한 사용자가 많을 경우, Pool에 있는 Connection이 한정되어 있으므로 Connection이 반환될 때 까지 대기한다.
+** 너무 많은 Connection을 생성할 경우, Connection을 유지하는데 많은 리소스가 소모되므로 프로그램의 성능에 악영향을 끼친다. 적절한 절충이 필요하다.
+  
+* 동시에 접근하는 사용자 수(Thread 개수)에 알맞게 Connection의 개수를 지정해야한다. 
+** __Connection Pool의 적절한 크기는 ?__
+*** 어디에서 들은 말에 의하면 기대 사용자의 수의 2배의 Connection을 구성하는 것이 좋다고 하였는데, 확실한지 검증을 거치지 못하였다.
+
+== 구조
+
+* 2 Tier
+** 프로그램이 직접 DB서버로 접근하여 데이터를 CRUD하는 구조
+  
+* 3 Tier
+** 프로그램과 DB서버 중간에 M/W 계층을 두어, M/W 계층에 로직 구현, 트랜잭션 처리, 리소스 관리를 일임한다.
+** 프로그램은 M/W 계층에 요청하고 M/W 계층에서 DB에 접근하여 프로그램이 원하는 결과를 제공한다.
+  
+== 종류
+
+. `commons-dbcp`
+.. 아파치 재단에서 제공하는 대표적인 Connection Pool 라이브러리
+.. Pool의 기본적인 구조는 Stack 형식을 따른다.
+  
+. `tomcat-jdbc-pool`
+.. tomcat에 내장되어 있는 Connection Pool 라이브러리
+.. `commons-dbcp` 라이브러리를 바탕으로 구현되었다.
+
+. `HikariCP`
+.. Spring Boot에서 기본적으로 사용되는 Connection Pool
+.. 가볍고 빠르다. (해당 부분에 대하여 추가적인 공부가 필요하다.)
+  
+= 예제
