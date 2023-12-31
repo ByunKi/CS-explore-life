@@ -1,0 +1,147 @@
+= 목차
+
+. ThreadLocal<?>
+. ThreadLocalMap<?>
+. ThreadLocal 사용법
+. ThreadPool과 ThreadLocal
+
+= 본문
+
+== ThreadLocal<?>
+
+* 스레드 단위로 지역변수를 사용할 수 있게하는 클래스
+* 작업을 처리하는 스레드마다 독립적으로 사용가능한 지역변수를 담고 있으므로 전역변수처럼 여러 메서드에서 사용될 수 있다.
+* 사용중인 스레드 객체에 존재하는 Map에 ThreadLocal의 값을 저장하여 사용한다.
+* 다른 스레드와 변수가 공유되면 부작용(Side Effect)이 발생하기 때문에 주의하여 사용해야한다.
+
+== ThreadLocalMap
+  
+* ThreadLocal 클래스의 정적 내부 클래스
+* 내부적으로 해시 테이블을 사용하는데 테이블의 요소는 Entry 객체이다.
+** Key: `ThreadLocal<?>`, Value: `WeakReference의 하위타입`
+
+== ThreadLocal 사용법
+
+=== set, get 메서드
+
+* ThreadLocal에 값을 저장하는 set 메서드, 값을 가져오는 get 메서드
+* 현재 스레드를 확인한 후에 getMap 메서드를 호출하여 특정 스레드의 ThreadLocalMap을 가져온다.
+* Thread 클래스에 ThreadLocalMap 타입의 필드가 있기 때문에 해당 스레드의 멤버가 직접적으로 반환된다.
+
+[source, java]
+----
+public void set(T value) {
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null) {
+        map.set(this, value);
+    } else {
+        createMap(t, value); 
+    }
+}
+
+public T get() {
+    Thread t = Thread.currentThread();
+    ThreadLocalMap map = getMap(t);
+    if (map != null) {
+        ThreadLocalMap.Entry e = map.getEntry(this);
+        if (e != null) {
+            @SuppressWarnings("unchecked")
+            T result = (T)e.value;
+            return result;
+        }
+    }
+    return setInitialValue();
+}
+
+ThreadLocalMap getMap(Thread t) {
+    return t.threadLocals;
+}
+
+void createMap(Thread t, T firstValue) {
+    t.threadLocals = new ThreadLocalMap(this, firstValue);
+}
+----
+
+=== withInitial 메서드
+
+* ThreadLocal 객체를 생성하면서 초기화하는 static 메서드
+
+[source, java]
+----
+public static <S> ThreadLocal<S> withInitial(Supplier<? extends S> supplier) {
+    return new SuppliedThreadLocal<>(supplier);
+}
+----
+
+=== remove 메서드
+
+* ThreadLocal 객체의 값을 삭제하는 메서드
+* ThreadLocal 객체의 사용이 종료되었다면, 명시적으로 호출해야 하는 메서드
+** Thread가 재사용되면서 이전에 저장한 ThreadLocal 정보가 잔류하여 부작용을 유발할 수 있다.
+
+[source, java]
+----
+public void remove() {
+     ThreadLocalMap m = getMap(Thread.currentThread());
+     if (m != null)
+         m.remove(this);
+}
+----
+
+== ThreadPool과 ThreadLocal
+
+* ThreadPool을 사용할 때는 ThreadLocal을 사용하는데 있어 주의가 필요하다.
+* 스레드가 재활용 될 수 있어, 이전에 사용했던 ThreadLocal의 값을 사용하여, 부작용이 발생할 수 있다.
+* 이러한 문제를 예방하기 위해서는 ThreadLocal의 사용이 끝나면, ThreadLocal의 내부정보가 제거 될 수 있도록 remove 메서드를 명시적으로 호출해야 한다.
+
+= 예시
+
+* 현재 사용중인 스레드에 한정하여 사용되는 지역변수 이니만큼 synchronized 같은 동기화를 위한 키워드는 없다.
+* 외부 접근, 참조 수정 방지 및 현재 스래드에서 전역적으로 사용되기 때문에 `private static final` 키워드가 붙는다.
+
+[source, java]
+----
+public class ThreadLocalTest {
+	
+	static class MadThread extends Thread {
+		private static final ThreadLocal<String> threadLocal = ThreadLocal.withInitial(() -> "defaultName");
+		private final String name;
+
+		public MadThread(String name) {
+			this.name = name;
+		}
+
+		@Override
+		public void run() {
+			System.out.printf("%s Started,  ThreadLocal: %s%n", name, threadLocal.get());
+			threadLocal.set(name);
+			System.out.printf("%s Finished, ThreadLocal: %s%n", name, threadLocal.get());
+		}
+	}
+
+	public void runTest() {
+		for (int threadCount = 1; threadCount <= 5; threadCount++) {
+			final MadThread thread = new MadThread("thread-" + threadCount);
+			thread.start();
+		}
+	}
+
+	public static void main(String[] args) {
+		new ThreadLocalTest().runTest();
+	}
+}
+----
+
+* 스레드가 동시에 실행되어, 출력 순서는 다르지만, 스레드 간섭없이 name이 잘 지정되어 있음을 알 수 있다. 
+
+  thread-1 Started,  ThreadLocal: defaultName
+  thread-1 Finished, ThreadLocal: thread-1
+  thread-5 Started,  ThreadLocal: defaultName
+  thread-5 Finished, ThreadLocal: thread-5
+  thread-4 Started,  ThreadLocal: defaultName
+  thread-4 Finished, ThreadLocal: thread-4
+  thread-3 Started,  ThreadLocal: defaultName
+  thread-2 Started,  ThreadLocal: defaultName
+  thread-3 Finished, ThreadLocal: thread-3
+  thread-2 Finished, ThreadLocal: thread-2
