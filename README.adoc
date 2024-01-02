@@ -20,7 +20,6 @@
 
 ^.^| 2023.12.30
 | 
-    * link:[Java Annotation]
     * link:https://github.com/ByunKi/CS-explore-life/blob/main/Dependency-Injection/conent.adoc[Dependency Injection]
 
 |===
